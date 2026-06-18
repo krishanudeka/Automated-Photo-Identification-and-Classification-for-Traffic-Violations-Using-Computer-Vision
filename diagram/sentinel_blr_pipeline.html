@@ -1,0 +1,370 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.pipeline{display:flex;flex-direction:column;gap:0;padding:16px 12px 24px}
+.group-wrap{display:flex;flex-direction:column;gap:0}
+.group-header{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:20px;cursor:pointer;user-select:none;transition:opacity .15s}
+.group-header:hover{opacity:.85}
+.group-label{font-size:13px;font-weight:500;letter-spacing:.04em;color:#fff;flex:1}
+.group-badge{font-size:11px;font-weight:500;color:rgba(255,255,255,.75);background:rgba(0,0,0,.18);border-radius:10px;padding:2px 8px}
+.chevron{font-size:12px;color:rgba(255,255,255,.7);transition:transform .25s}
+.chevron.open{transform:rotate(180deg)}
+.layers{display:flex;flex-direction:column;gap:6px;padding:8px 0 4px 0;overflow:hidden;transition:all .3s}
+.layers.collapsed{display:none}
+.layer{border-radius:8px;padding:10px 14px;cursor:pointer;transition:filter .15s, transform .1s;border:0.5px solid transparent}
+.layer:hover{filter:brightness(1.06);transform:translateX(2px)}
+.layer:active{transform:scale(.99)}
+.layer-label{font-size:13px;font-weight:500}
+.layer-sub{font-size:11px;margin-top:3px;opacity:.75;line-height:1.5}
+.connector{display:flex;align-items:center;justify-content:center;height:28px;position:relative}
+.connector::before{content:'';position:absolute;left:50%;top:0;bottom:4px;width:2px;background:var(--color-border-secondary);transform:translateX(-50%)}
+.connector::after{content:'▼';position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:10px;color:var(--color-text-tertiary);line-height:1}
+.diamond-wrap{display:flex;justify-content:center;align-items:center;height:74px;position:relative}
+.diamond-wrap::before{content:'';position:absolute;left:50%;top:0;height:14px;width:2px;background:var(--color-border-secondary);transform:translateX(-50%)}
+.diamond-wrap::after{content:'';position:absolute;left:50%;bottom:0;height:14px;width:2px;background:var(--color-border-secondary);transform:translateX(-50%)}
+.diamond{width:110px;height:46px;background:#e040a0;display:flex;align-items:center;justify-content:center;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);cursor:pointer;transition:filter .15s}
+.diamond:hover{filter:brightness(1.1)}
+.diamond span{font-size:11px;font-weight:500;color:#fff;text-align:center;line-height:1.3}
+.detail-panel{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:14px 16px;margin-top:8px;font-size:12px;color:var(--color-text-secondary);line-height:1.6;display:none}
+.detail-panel.show{display:block}
+.detail-panel strong{color:var(--color-text-primary);font-weight:500}
+.detail-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tag{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:400}
+.progress-bar{height:3px;border-radius:2px;margin-top:14px;background:var(--color-border-tertiary);overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .4s}
+.status-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--color-text-tertiary)}
+</style>
+
+<div class="pipeline">
+  <div style="text-align:center;padding:4px 0 14px">
+    <div style="font-size:16px;font-weight:500;color:var(--color-text-primary)">Sentinel-BLR Pipeline</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:3px">Click any layer for details · Click group header to collapse</div>
+  </div>
+
+  <!-- GROUP 1 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#3a62b0" onclick="toggleGroup('g1')">
+      <div class="group-label">Group 1 — Ingestion</div>
+      <div class="group-badge">1 layer</div>
+      <div class="chevron open" id="chev-g1">▼</div>
+    </div>
+    <div class="layers" id="g1">
+      <div class="layer" style="background:#d6e8f7;border-color:#a8c8ea" onclick="showDetail('d-l0')">
+        <div class="layer-label" style="color:#0c3d6e">Layer 0 · Feed Ingestion</div>
+        <div class="layer-sub" style="color:#1a5080">RTSP/ONVIF · KAFKA Hybrid Payloads</div>
+      </div>
+      <div class="detail-panel" id="d-l0">
+        <strong>Feed Ingestion</strong> — Entry point for all video streams. Supports multi-protocol live ingest and event-driven payloads for resilient, low-latency capture.
+        <div class="detail-tags">
+          <span class="tag" style="background:#dbeafe;color:#1e40af">RTSP</span>
+          <span class="tag" style="background:#dbeafe;color:#1e40af">ONVIF</span>
+          <span class="tag" style="background:#dbeafe;color:#1e40af">Kafka</span>
+          <span class="tag" style="background:#dbeafe;color:#1e40af">Hybrid Payloads</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- GROUP 2 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#3d6e2a" onclick="toggleGroup('g2')">
+      <div class="group-label">Group 2 — Preprocessing</div>
+      <div class="group-badge">2 layers</div>
+      <div class="chevron open" id="chev-g2">▼</div>
+    </div>
+    <div class="layers" id="g2">
+      <div class="layer" style="background:#d4edcc;border-color:#a0d08a" onclick="showDetail('d-l1')">
+        <div class="layer-label" style="color:#1a4010">Layer 1 · Environmental Preprocessing</div>
+        <div class="layer-sub" style="color:#2a5a18">CLAHE Multi-Scale Retinex · DCF De-Tuning · Wiener De-blur</div>
+      </div>
+      <div class="detail-panel" id="d-l1">
+        <strong>Environmental Preprocessing</strong> — Corrects for adverse conditions (glare, fog, night) using contrast-limited adaptive histogram equalization and multi-scale retinex, plus deconvolution filters for motion blur.
+        <div class="detail-tags">
+          <span class="tag" style="background:#dcfce7;color:#14532d">CLAHE</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">Retinex</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">DCF De-Tuning</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">Wiener De-blur</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#d4edcc;border-color:#a0d08a" onclick="showDetail('d-l1a')">
+        <div class="layer-label" style="color:#1a4010">Layer 1A · Auto-Calibration Heartbeat</div>
+        <div class="layer-sub" style="color:#2a5a18">SIFT/ORB Homography · 15-min Drift Detection · N+1 ROI Re-Projection</div>
+      </div>
+      <div class="detail-panel" id="d-l1a">
+        <strong>Auto-Calibration Heartbeat</strong> — Continuously monitors camera alignment via feature matching every 15 minutes and corrects ROI drift automatically to maintain spatial accuracy.
+        <div class="detail-tags">
+          <span class="tag" style="background:#dcfce7;color:#14532d">SIFT/ORB</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">Homography</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">15-min Heartbeat</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">ROI Drift</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- GROUP 3 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#b84e14" onclick="toggleGroup('g3')">
+      <div class="group-label">Group 3 — Detection</div>
+      <div class="group-badge">2 layers</div>
+      <div class="chevron open" id="chev-g3">▼</div>
+    </div>
+    <div class="layers" id="g3">
+      <div class="layer" style="background:#fde8b0;border-color:#f4c040" onclick="showDetail('d-l2')">
+        <div class="layer-label" style="color:#4a2800">Layer 2 · Macro Detection</div>
+        <div class="layer-sub" style="color:#6b3a00">YOLOv10-N TensorRT INT8 · ByteTrack · 11 Classes</div>
+      </div>
+      <div class="detail-panel" id="d-l2">
+        <strong>Macro Detection</strong> — Real-time object detection at INT8 precision for maximum throughput. ByteTrack provides ID-consistent multi-object tracking across 11 traffic violation classes.
+        <div class="detail-tags">
+          <span class="tag" style="background:#fef3c7;color:#78350f">YOLOv10-N</span>
+          <span class="tag" style="background:#fef3c7;color:#78350f">TensorRT INT8</span>
+          <span class="tag" style="background:#fef3c7;color:#78350f">ByteTrack</span>
+          <span class="tag" style="background:#fef3c7;color:#78350f">11 Classes</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#fde8b0;border-color:#f4c040" onclick="showDetail('d-l2a')">
+        <div class="layer-label" style="color:#4a2800">Layer 2A · Inference Budget Controller + ATS</div>
+        <div class="layer-sub" style="color:#6b3a00">Trigger Gates · Async Queues · Per-Track-ID Gating · Adaptive Temporal Striding</div>
+      </div>
+      <div class="detail-panel" id="d-l2a">
+        <strong>Inference Budget Controller</strong> — Dynamically adjusts frame sampling rate per tracked object to balance GPU load. Adaptive Temporal Striding skips redundant frames for stationary tracks.
+        <div class="detail-tags">
+          <span class="tag" style="background:#fef3c7;color:#78350f">Trigger Gates</span>
+          <span class="tag" style="background:#fef3c7;color:#78350f">Async Queues</span>
+          <span class="tag" style="background:#fef3c7;color:#78350f">Per-Track Gating</span>
+          <span class="tag" style="background:#fef3c7;color:#78350f">ATS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- GROUP 4 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#3a62b0" onclick="toggleGroup('g4')">
+      <div class="group-label">Group 4 — Classification</div>
+      <div class="group-badge">1 layer</div>
+      <div class="chevron open" id="chev-g4">▼</div>
+    </div>
+    <div class="layers" id="g4">
+      <div class="layer" style="background:#d6e8f7;border-color:#a8c8ea" onclick="showDetail('d-l3')">
+        <div class="layer-label" style="color:#0c3d6e">Layer 3 · Violation Detection Engine</div>
+        <div class="layer-sub" style="color:#1a5080">5 Parallel Paths: Helmet/Seatbelt · Triple Riding · Wrong Side · Stop-Line/Red-Light · Illegal Parking</div>
+      </div>
+      <div class="detail-panel" id="d-l3">
+        <strong>Violation Detection Engine</strong> — Five class-specific sub-models run in parallel, each tuned for its violation type. Hybrid model used for triple riding due to occlusion complexity.
+        <div class="detail-tags">
+          <span class="tag" style="background:#dbeafe;color:#1e3a8a">Helmet/Seatbelt</span>
+          <span class="tag" style="background:#dbeafe;color:#1e3a8a">Triple Riding</span>
+          <span class="tag" style="background:#dbeafe;color:#1e3a8a">Wrong Side</span>
+          <span class="tag" style="background:#dbeafe;color:#1e3a8a">Stop-Line</span>
+          <span class="tag" style="background:#dbeafe;color:#1e3a8a">Red-Light</span>
+          <span class="tag" style="background:#dbeafe;color:#1e3a8a">Illegal Parking</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- GROUP 5 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#3d6e2a" onclick="toggleGroup('g5')">
+      <div class="group-label">Group 5 — Decision</div>
+      <div class="group-badge">2 layers</div>
+      <div class="chevron open" id="chev-g5">▼</div>
+    </div>
+    <div class="layers" id="g5">
+      <div class="layer" style="background:#d4edcc;border-color:#a0d08a" onclick="showDetail('d-l4')">
+        <div class="layer-label" style="color:#1a4010">Layer 4 · Confidence Gate</div>
+        <div class="layer-sub" style="color:#2a5a18">Per-Violation Thresholds · Multi-Frame Consensus · Three-Way Router</div>
+      </div>
+      <div class="detail-panel" id="d-l4">
+        <strong>Confidence Gate</strong> — Each violation class has an independently tuned confidence threshold. Multi-frame consensus requires agreement across N frames before forwarding. Router sends to auto-approve, human review, or reject.
+        <div class="detail-tags">
+          <span class="tag" style="background:#dcfce7;color:#14532d">Per-Class Thresholds</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">Multi-Frame</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">3-Way Router</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#d4edcc;border-color:#a0d08a" onclick="showDetail('d-l4a')">
+        <div class="layer-label" style="color:#1a4010">Layer 4A · Enforcement Policy Engine</div>
+        <div class="layer-sub" style="color:#2a5a18">YAML Config – hot id. · RTP Updatable · Graduated Warning Tier</div>
+      </div>
+      <div class="detail-panel" id="d-l4a">
+        <strong>Enforcement Policy Engine</strong> — Policy rules (fine amounts, warning tiers, exempt zones) are defined in YAML and can be hot-reloaded at runtime via RTP without system restart.
+        <div class="detail-tags">
+          <span class="tag" style="background:#dcfce7;color:#14532d">YAML Config</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">Hot Reload</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">RTP Updatable</span>
+          <span class="tag" style="background:#dcfce7;color:#14532d">Warning Tiers</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Human Review Diamond -->
+  <div class="diamond-wrap">
+    <div class="diamond" onclick="showDetail('d-hr')" title="Human Review">
+      <span>HUMAN<br>REVIEW</span>
+    </div>
+  </div>
+  <div class="detail-panel" id="d-hr" style="margin-top:-2px">
+    <strong>Human Review Gate</strong> — Borderline cases (confidence between low and high thresholds) are queued for human operator review before any enforcement action is taken. Operators confirm or reject via the Review Queue dashboard.
+    <div class="detail-tags">
+      <span class="tag" style="background:#fce7f3;color:#831843">Manual Override</span>
+      <span class="tag" style="background:#fce7f3;color:#831843">Review Queue</span>
+      <span class="tag" style="background:#fce7f3;color:#831843">Operator Confirm</span>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- GROUP 6 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#4a5568" onclick="toggleGroup('g6')">
+      <div class="group-label">Group 6 — Identification & Evidence</div>
+      <div class="group-badge">3 layers</div>
+      <div class="chevron open" id="chev-g6">▼</div>
+    </div>
+    <div class="layers" id="g6">
+      <div class="layer" style="background:#e8ecf2;border-color:#bcc5d4" onclick="showDetail('d-l5')">
+        <div class="layer-label" style="color:#1e2d45">Layer 5 · License Plate OCR</div>
+        <div class="layer-sub" style="color:#2d3f5a">PaddleOCR PP-OCR-4 · Temporal 3-Frame Softmax Fusion · Levenshtein Outlier Filter</div>
+      </div>
+      <div class="detail-panel" id="d-l5">
+        <strong>License Plate OCR</strong> — PP-OCR-4 runs on each frame independently; softmax scores across 3 consecutive frames are fused for higher accuracy. Levenshtein distance filters spurious single-character mutations.
+        <div class="detail-tags">
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">PaddleOCR</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">PP-OCR-4</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">Softmax Fusion</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">Levenshtein</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#e8ecf2;border-color:#bcc5d4" onclick="showDetail('d-l5e')">
+        <div class="layer-label" style="color:#1e2d45">Layer 5E · Repeat Offender Tracking</div>
+        <div class="layer-sub" style="color:#2d3f5a">Cross-Junction Plate Index · 24h/7d/30d Lookback · MV Act 2019 & 210A</div>
+      </div>
+      <div class="detail-panel" id="d-l5e">
+        <strong>Repeat Offender Tracking</strong> — Plate numbers are indexed across all junctions. Lookback windows at 24h, 7d, and 30d surface habitual offenders, which escalates enforcement under MV Act 2019 & section 210A.
+        <div class="detail-tags">
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">Cross-Junction</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">24h/7d/30d</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">MV Act 2019</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">210A</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#e8ecf2;border-color:#bcc5d4" onclick="showDetail('d-l6')">
+        <div class="layer-label" style="color:#1e2d45">Layer 6 · Evidence Packet Generator</div>
+        <div class="layer-sub" style="color:#2d3f5a">Annotated Frame + GradCAM · UTC Timestamp · GPS · SHA-256 Hash · BIS 0–100</div>
+      </div>
+      <div class="detail-panel" id="d-l6">
+        <strong>Evidence Packet Generator</strong> — Produces a tamper-evident bundle: annotated frame with GradCAM saliency overlay, GPS-tagged location, UTC timestamp, SHA-256 integrity hash, and a BIS confidence score (0–100).
+        <div class="detail-tags">
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">GradCAM</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">UTC Timestamp</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">GPS</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">SHA-256</span>
+          <span class="tag" style="background:#e2e8f0;color:#1e293b">BIS Score</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- GROUP 7 -->
+  <div class="group-wrap">
+    <div class="group-header" style="background:#7a5800" onclick="toggleGroup('g7')">
+      <div class="group-label">Group 7 — Intelligence & Output</div>
+      <div class="group-badge">3 layers</div>
+      <div class="chevron open" id="chev-g7">▼</div>
+    </div>
+    <div class="layers" id="g7">
+      <div class="layer" style="background:#f5e6b0;border-color:#d4aa30" onclick="showDetail('d-l7')">
+        <div class="layer-label" style="color:#3a2600">Layer 7 · Persistence</div>
+        <div class="layer-sub" style="color:#5a3a00">PostgreSQL + TimescaleDB · DuckDB Batch Analytics · Nightly 02:00 Aggregation</div>
+      </div>
+      <div class="detail-panel" id="d-l7">
+        <strong>Persistence</strong> — Time-series violations stored in TimescaleDB (via PostgreSQL) for efficient range queries. DuckDB runs nightly batch analytics at 02:00 to aggregate junction-level stats.
+        <div class="detail-tags">
+          <span class="tag" style="background:#fef9c3;color:#713f12">PostgreSQL</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">TimescaleDB</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">DuckDB</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">Nightly 02:00</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#f5e6b0;border-color:#d4aa30" onclick="showDetail('d-l8')">
+        <div class="layer-label" style="color:#3a2600">Layer 8 · Strategic Intelligence</div>
+        <div class="layer-sub" style="color:#5a3a00">Junction Urgency Score · Recency Decay 0.85^days · Weekly LoRA Fine-Tuning Loop</div>
+      </div>
+      <div class="detail-panel" id="d-l8">
+        <strong>Strategic Intelligence</strong> — Computes a Junction Urgency Score using exponential recency decay (0.85^days). Weekly LoRA fine-tuning adapts detection models to local conditions without full retraining.
+        <div class="detail-tags">
+          <span class="tag" style="background:#fef9c3;color:#713f12">Urgency Score</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">Recency Decay</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">LoRA</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">Weekly Tuning</span>
+        </div>
+      </div>
+      <div class="layer" style="background:#f5e6b0;border-color:#d4aa30" onclick="showDetail('d-l9')">
+        <div class="layer-label" style="color:#3a2600">Layer 9 · Analytics Dashboard</div>
+        <div class="layer-sub" style="color:#5a3a00">GIS Live Map · Junction Heatmap · Review Queue · Deployment Recommendations · Public Feed</div>
+      </div>
+      <div class="detail-panel" id="d-l9">
+        <strong>Analytics Dashboard</strong> — Operator-facing GIS map with real-time violation pins, junction heatmaps for hotspot analysis, a review queue for borderline cases, and a public-transparency feed.
+        <div class="detail-tags">
+          <span class="tag" style="background:#fef9c3;color:#713f12">GIS Live Map</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">Heatmap</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">Review Queue</span>
+          <span class="tag" style="background:#fef9c3;color:#713f12">Public Feed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:18px;padding:12px 14px;background:var(--color-background-secondary);border-radius:10px;border:0.5px solid var(--color-border-tertiary)">
+    <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px">Pipeline flow</div>
+    <div style="display:flex;align-items:center;gap:0;font-size:11px;flex-wrap:wrap;gap:3px">
+      <span style="padding:3px 8px;background:#d6e8f7;color:#0c3d6e;border-radius:6px">Ingest</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#d4edcc;color:#1a4010;border-radius:6px">Preprocess</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#fde8b0;color:#4a2800;border-radius:6px">Detect</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#d6e8f7;color:#0c3d6e;border-radius:6px">Classify</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#d4edcc;color:#1a4010;border-radius:6px">Decide</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#fce7f3;color:#831843;border-radius:6px">Review</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#e8ecf2;color:#1e2d45;border-radius:6px">ID & Evidence</span>
+      <span style="color:var(--color-text-tertiary)">→</span>
+      <span style="padding:3px 8px;background:#f5e6b0;color:#3a2600;border-radius:6px">Output</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleGroup(id){
+  const el=document.getElementById(id);
+  const chev=document.getElementById('chev-'+id);
+  const collapsed=el.classList.toggle('collapsed');
+  chev.classList.toggle('open',!collapsed);
+}
+let lastOpen=null;
+function showDetail(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(lastOpen && lastOpen!==el) lastOpen.classList.remove('show');
+  el.classList.toggle('show');
+  lastOpen=el.classList.contains('show')?el:null;
+}
+</script>
