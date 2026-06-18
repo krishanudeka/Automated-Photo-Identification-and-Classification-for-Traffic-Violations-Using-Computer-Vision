@@ -232,7 +232,6 @@ Sentinel-BLR/
 │   ├── Project_Proposal.pdf
 │
 ├── diagrams/
-│   ├── pipeline.png
 │   |__ architecture.png
 │
 ├── datasets/
