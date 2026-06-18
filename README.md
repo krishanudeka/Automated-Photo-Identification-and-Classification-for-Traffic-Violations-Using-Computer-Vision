@@ -7,7 +7,6 @@
 ![Hackathon](https://img.shields.io/badge/Flipkart%20Gridlock-2.0-orange)
 ![Theme](https://img.shields.io/badge/Theme-3-success)
 ![Domain](https://img.shields.io/badge/Computer%20Vision-Traffic%20Enforcement-red)
-![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
