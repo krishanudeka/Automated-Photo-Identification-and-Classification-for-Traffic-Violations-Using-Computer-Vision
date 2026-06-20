@@ -163,7 +163,7 @@
 \textbf{What's proven vs.\ what's a design target:} OCR fusion, the calibration heartbeat, and the policy-engine pattern rest on established technique. The $\leq$28~ms standard-condition compute budget and the Volumetric Bounding-Box triple-riding threshold are explicit design targets pending Phase~1 field validation --- and Layer~4A already structurally prevents the least-validated component (triple riding) from ever auto-fining, regardless of confidence. Sentinel-BLR is built to know what it doesn't know yet, not to overclaim certainty it hasn't earned.
 
 \vspace{0.3em}
-\textbf{Synthetic priors --- data source defined:} Safety-violation count initialisers are drawn from the Karnataka Traffic Road Safety Index (KA-TRSI)~\cite{katrsi2023} --- a team-compiled aggregate of district-level violation-frequency statistics extracted from Karnataka Police Annual Road Safety Reports (2019--2023)~\cite{katrsi2023}. KA-TRSI priors carry $<$20\% weight from day 1 and are replaced entirely by live field observations within 30 days of Phase~1 operation. They are never used for urgency scoring or auto-fine logic.
+\textbf{Synthetic priors --- data source defined:} Safety-violation count initialisers are absent from the provided datasets (2 helmet and 0 triple-riding records across 298,450 rows in the Police Violations Dataset). Layer~8 initialises violation-type weights to uniform and relies on pre-trained IDD/ACFR/Roboflow Helmet weights as the classification foundation. These priors carry $<$20\% weight from day~1 and are replaced entirely by live field observations within 30 days of Phase~1 operation. They are never used for urgency scoring or auto-fine logic.
 
 \end{callout}
 
@@ -549,7 +549,7 @@ The pipeline comparison below illustrates, at each processing stage, the structu
     Compute feasibility & Theoretical benchmark & ATS + TensorRT INT8 $\rightarrow$ $\leq$28~ms standard / $\leq$38~ms adverse-peak design target on Jetson Orin NX (see compute budget note in Section~\ref{sec:layerspec}) \\
     \rowcolor{rowgray}
     Kafka bandwidth & Raw frame streaming & Hybrid Evidence Payload: JSON + ROI JPEG crop ($<$50~KB) \\
-    Safety violation data scarcity & Zero-initialise or ignore & KA-TRSI~\cite{katrsi2023} district-level safety-violation priors (Karnataka Police Annual Reports 2019--2023) + IDD/ACFR/Roboflow Helmet weights; live data dominates after 30 days \\
+    Safety violation data scarcity & Zero-initialise or ignore & Uniform priors (safety violations are absent from provided datasets) + pre-trained IDD/ACFR/Roboflow Helmet weights as classification foundation; live data dominates after 30 days \\
 \end{longtable}
 
 % ══════════════════════════════════════════════════════════════════════════════
@@ -602,7 +602,7 @@ Three Evidence-Quality Layers --- Layer~1A (auto-calibration), Layer~2A (inferen
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.52\linewidth]{Layer 2 Macro Detection YOLOv10-N Tensor INT8 ByteTrack 11 Classes (1).png}
+    \includegraphics[width=0.70\linewidth]{Layer 2 Macro Detection YOLOv10-N Tensor INT8 ByteTrack 11 Classes (1).png}
     \caption{Sentinel-BLR Full System Architecture}
     \label{fig:architecture}
 \end{figure}
@@ -887,7 +887,7 @@ The SHA-256 hash covers the annotated frame bytes; any modification \emph{after}
     Kannada-script plates & Temporal probability fusion + LOW CONFIDENCE flag routes to human review & Fine-tune PaddleOCR on Kannada-script plate dataset (Phase 2) \\
     \rowcolor{rowgray}
     Night-time triple riding (IR-only) & IR-mode flag triggers luminance-based head-count heuristic; routed to human review & Dedicated IR-trained classifier \\
-    Safety violation data scarcity & Synthetic priors from KA-TRSI~\cite{katrsi2023} (Karnataka Police Annual Reports 2019--2023; explicitly flagged synthetic in all outputs); IDD/ACFR/Roboflow Helmet pre-trained weights as foundation; $<$20\% weight after 30 days live data & Replace synthetic priors entirely with Phase~1 local data within 30 days \\
+    Safety violation data scarcity & Uniform priors (provided datasets contain 2 helmet and 0 triple-riding records across 298,450 rows; explicitly flagged in all outputs); IDD/ACFR/Roboflow Helmet pre-trained weights as classification foundation; $<$20\% weight after 30 days live data & Replace uniform priors entirely with Phase~1 local data within 30 days \\
     \rowcolor{rowgray}
     Single-camera blind spots & Deployment panel flags junctions needing multi-angle coverage via OSM geometry & Phase~3 multi-camera rollout \\
 \end{longtable}
@@ -952,7 +952,7 @@ Sentinel-BLR closes all three.
     OCR defeated by mud, damage, Kannada script & Temporal Character-Level Probability Fusion across 5 frames; softmax sum + argmax; Levenshtein outlier filter \\
     \rowcolor{rowgray}
     Calibration drift when cameras shift & Auto-Calibration Heartbeat via SIFT/ORB every 15~min; automatic ROI re-projection \\
-    Police Violations Dataset has near-zero safety violation examples & Karnataka Traffic Road Safety Index (KA-TRSI)~\cite{katrsi2023} district-level priors (explicitly flagged) + pre-trained IDD/ACFR/Roboflow Helmet weights; not used for urgency scoring \\
+    Police Violations Dataset has near-zero safety violation examples & Uniform priors (2 helmet, 0 triple-riding records across 298,450 rows; explicitly flagged) + pre-trained IDD/ACFR/Roboflow Helmet weights as classification foundation; not used for urgency scoring \\
     \rowcolor{rowgray}
     Kafka raw frame streaming is network-prohibitive & Hybrid Evidence Payload: JSON metadata + Base64 ROI JPEG crop ($<$50~KB). Never raw video. \\
 \end{longtable}
@@ -1007,7 +1007,7 @@ Sentinel-BLR closes all three.
     Police Violations Dataset (Nov 2023--Apr 2024) & 298,450 & Parking spatial heatmap; peak-hour patterns by vehicle class; junction deployment priority ranking & Safety violation urgency scoring --- the dataset holds only 2 helmet and 8 seatbelt records across 298,450 rows; 97.3\% of all violation tokens are parking offences. This is a parking dataset, not a safety dataset \\
     \rowcolor{rowgray}
     ASTRAM Event Dataset (Nov 2023--Apr 2024) & 8,173 & Waterlogging events (458): pre-schedule DCP de-hazing. Accident events (365): $1.15\times$ urgency multiplier & --- \\
-    Synthetic priors (KA-TRSI~\cite{katrsi2023} — Karnataka Police Annual Reports 2019--2023; explicitly labelled synthetic in all outputs) & District-level & Safety-violation hourly count initialisation; $<$20\% weight after 30~days live data; never presented as observed enforcement data & Never used for urgency scoring or auto-fine logic \\
+    Uniform priors (provided datasets contain 2 helmet and 0 triple-riding records; explicitly labelled as uninformative in all outputs) & N/A & Safety-violation weight initialisation via IDD/ACFR/Roboflow Helmet pre-trained weights; $<$20\% weight after 30~days live data; never presented as observed enforcement data & Never used for urgency scoring or auto-fine logic \\
     \rowcolor{rowgray}
     IMD Weather API & Real-time & DCP de-hazing activation (15-min polling) & --- \\
     YOLO lamp-colour classifier; BTP Signal API (Phase~2) & Real-time & Signal state for stop-line detection & --- \\
@@ -1103,21 +1103,29 @@ Most submissions for this problem stop at the model. Two questions a deploying a
 \subsection*{Per-Junction Hardware Cost (Indicative)}
 
 {
-\centering
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{0.95}
-\begin{tabular}{L{4.5cm} L{8.5cm}}
+\begin{longtable}{L{4.5cm} L{8.5cm}}
     \toprule
     \rowcolor{headerblue}
     \color{white}\textbf{Item} & \color{white}\textbf{Indicative Cost (per junction)} \\
     \midrule
+    \endfirsthead
+    \toprule
+    \rowcolor{headerblue}
+    \color{white}\textbf{Item} & \color{white}\textbf{Indicative Cost (per junction)} \\
+    \midrule
+    \endhead
+    \midrule
+    \multicolumn{2}{r}{\small\textit{(continued on next page)}}\\
+    \endfoot
+    \bottomrule
+    \endlastfoot
     Jetson Orin NX 16~GB module & $\sim$\$600--970 (INR 50,000--80,000) retail per unit; NVIDIA does not publish fixed pricing, bulk/distributor quotes typically run lower. Carrier board, enclosure, NVMe storage, and power supply are separate line items not included in module price. \\
     \rowcolor{rowgray}
     Camera + housing (existing BTP CCTV reused where possible) & Marginal cost \emph{only where} the existing RTSP/ONVIF feed is already OCR-grade. This is the load-bearing assumption in the cost story and must not be overstated: much surveillance CCTV is sited for wide-area monitoring, not plate capture (angle, focal length, resolution-at-distance), so a fraction of junctions will need a dedicated plate camera --- a junction-specific capex item Phase~1 surveys before committing. Full new-install cost is out of scope for this estimate. \\
     Networking / cloud fallback (AWS EC2 G5 or GCP T4, on-demand) & Pay-per-use; Hybrid Evidence Payload design (JSON + $<$50~KB JPEG) keeps egress cost low relative to raw-frame streaming alternatives. \\
-    \bottomrule
-\end{tabular}
-\par
+\end{longtable}
 }
 
 \vspace{0.6em}
@@ -1201,12 +1209,7 @@ ThePrint, reporting a Parliament Standing Committee action-taken report.
 \textit{Parliament Panel Urges AI-Led Traffic Management, Global Best Practices for Delhi Roads}.
 [Delhi Police has installed 334 Red Light Violation Detection / Over-Speed Violation Detection cameras, with 328 more under procurement, as part of an ongoing AI-based Integrated Traffic Management System project.]
 
-\bibitem{katrsi2023}
-Karnataka State Road Safety Authority (KSRSA).
-\textit{Karnataka Traffic Road Safety Index (KA-TRSI): District-Level Traffic Violation Frequency Statistics, 2019--2023}.
-Team-compiled aggregate extracted from Karnataka Police Annual Road Safety Reports and KSRSA enforcement registers, categorised by violation type, district, and time-of-day band.
-Available via Karnataka Police Public Information Portal (\url{https://ksp.karnataka.gov.in}).
-Used in Sentinel-BLR solely for synthetic prior initialisation of safety-violation hourly count estimates; weighted at $<$20\% from day~1 and replaced entirely by Phase~1 live field data within 30 days. Never used for urgency scoring, auto-fine logic, or any enforcement decision.
+
 
 \end{thebibliography}
 
