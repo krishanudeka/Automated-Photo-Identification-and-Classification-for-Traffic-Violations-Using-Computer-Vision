@@ -1,6 +1,6 @@
 # Automated-Photo-Identification-and-Classification-for-Traffic-Violations-Using-Computer-Vision
 
-# 🚦 Sentinel-BLR v6.0
+# Sentinel-BLR v6.0
 
 ### Evidence-Quality Traffic Enforcement Framework for Smart Cities
 
@@ -15,10 +15,10 @@
 
 | Resource | Link |
 |---|---|
-| 📄 Technical Proposal (PDF) | [`docs/Sentinel_BLR_Code.tex`](docs/Sentinel_BLR_Code.tex) |
-| 🏗 System Architecture Diagram | [`diagrams/Sentinel-BLR architecture.png`](diagrams/Sentinel-BLR%20architecture.png) |
-| 🔄 Pipeline Flow Diagram | [`diagrams/Sentinel-BLR pipeline.png`](diagrams/Sentinel-BLR%20pipeline.png) |
-| 🎞 Pitch Deck | [`pitch/Sentinel_BLR_Pitch_v2.pptx`](pitch/Sentinel_BLR_Pitch_v2.pptx) |
+| Technical Proposal (PDF) | [`docs/Sentinel_BLR_Code.tex`](docs/Sentinel_BLR_Code.tex) |
+| System Architecture Diagram | [`diagrams/Sentinel-BLR architecture.png`](diagrams/Sentinel-BLR%20architecture.png) |
+| Pipeline Flow Diagram | [`diagrams/Sentinel-BLR pipeline.png`](diagrams/Sentinel-BLR%20pipeline.png) |
+| Pitch Deck | [`pitch/Sentinel_BLR_Pitch_v2.pptx`](pitch/Sentinel_BLR_Pitch_v2.pptx) |
 
 ---
 
