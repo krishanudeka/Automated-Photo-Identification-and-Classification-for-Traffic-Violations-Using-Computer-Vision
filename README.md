@@ -251,7 +251,7 @@ Sentinel-BLR/
 └── README.md
 ```
 
-> **Note on datasets:** Training datasets (Police Violations Dataset — 298,450 records; ASTRAM — 8,173 records) are not included in this repository due to size and licensing constraints. See the Datasets section below for sources.
+> **Note on datasets:** Training datasets (Police Violations Dataset — 298,450 records; ASTRAM — 8,173 records) are not included in this repository due to size constraints. See the Datasets section below for sources.
 
 ---
 
@@ -300,7 +300,6 @@ Sentinel-BLR/
 |---|---|---|
 | Police Violations Dataset (Flipkart Gridlock Dataset B) | 298,450 records | Flipkart Gridlock 2.0 |
 | ASTRAM Event Dataset (Flipkart Gridlock Dataset A) | 8,173 records | Flipkart Gridlock 2.0 |
-| KA-TRSI (Karnataka Road Safety Incident data) | Compiled from Karnataka Police Annual Road Safety Reports 2019–2023 | Team-compiled |
 | IDD / ACFR / Roboflow Helmet | Pre-trained weights | Public |
 | OpenStreetMap | Road geometry, one-way directionality | OSM |
 | IMD Weather API | Adverse-condition routing | Government of India |
@@ -365,7 +364,7 @@ At this stage it contains the system architecture, full technical proposal, desi
 | Member | Institution |
 |---|---|
 | Krishanu Deka | NIT Silchar (ECE) |
-| [Teammate Name] | NIT Silchar |
+| Bedagya Bordoloi | VIT AP (CSE) |
 
 **Project:** Sentinel-BLR — Evidence-Quality Traffic Enforcement Framework
 
