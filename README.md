@@ -246,7 +246,7 @@ Sentinel-BLR/
 │   └── Sentinel-BLR pipeline.png
 │
 ├── pitch/
-│   └── Sentinel_BLR_Pitch_v2.pptx
+│   └── Sentinel_BLR_Pitch.pptx
 │
 └── README.md
 ```
