@@ -239,14 +239,13 @@ The framework consists of **15 logical layers** grouped into **7 functional modu
 Sentinel-BLR/
 │
 ├── docs/
-│   └── Sentinel_BLR_Code.tex        # Full technical proposal (LaTeX source)
+|   ├── Sentinel_BLR.pdf
+│   ├── Sentinel_BLR_Code.tex        # Full technical proposal (LaTeX source)
+|   └── Sentinel_BLR_Pitch.pptx
 │
 ├── diagrams/
 │   ├── Sentinel-BLR architecture.png
 │   └── Sentinel-BLR pipeline.png
-│
-├── pitch/
-│   └── Sentinel_BLR_Pitch.pptx
 │
 └── README.md
 ```
