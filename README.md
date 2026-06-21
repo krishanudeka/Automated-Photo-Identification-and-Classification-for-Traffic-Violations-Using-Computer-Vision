@@ -1,12 +1,24 @@
 # Automated-Photo-Identification-and-Classification-for-Traffic-Violations-Using-Computer-Vision
 
-# 🚦 Sentinel-BLR v4.2
+# 🚦 Sentinel-BLR v6.0
+
 ### Evidence-Quality Traffic Enforcement Framework for Smart Cities
 
-![Status](https://img.shields.io/badge/Status-Framework%20Proposal-blue)
-![Hackathon](https://img.shields.io/badge/Flipkart%20Gridlock-2.0-orange)
-![Theme](https://img.shields.io/badge/Theme-3-success)
-![Domain](https://img.shields.io/badge/Computer%20Vision-Traffic%20Enforcement-red)
+[![Status](https://img.shields.io/badge/Status-Framework%20Proposal-blue)](https://img.shields.io/badge/Status-Framework%20Proposal-blue)
+[![Hackathon](https://img.shields.io/badge/Flipkart%20Gridlock-2.0-orange)](https://img.shields.io/badge/Flipkart%20Gridlock-2.0-orange)
+[![Theme](https://img.shields.io/badge/Theme-3-success)](https://img.shields.io/badge/Theme-3-success)
+[![Domain](https://img.shields.io/badge/Computer%20Vision-Traffic%20Enforcement-red)](https://img.shields.io/badge/Computer%20Vision-Traffic%20Enforcement-red)
+
+---
+
+## Quick Links
+
+| Resource | Link |
+|---|---|
+| 📄 Technical Proposal (PDF) | [`docs/Sentinel_BLR_Code.tex`](docs/Sentinel_BLR_Code.tex) |
+| 🏗 System Architecture Diagram | [`diagrams/Sentinel-BLR architecture.png`](diagrams/Sentinel-BLR%20architecture.png) |
+| 🔄 Pipeline Flow Diagram | [`diagrams/Sentinel-BLR pipeline.png`](diagrams/Sentinel-BLR%20pipeline.png) |
+| 🎞 Pitch Deck | [`pitch/Sentinel_BLR_Pitch_v2.pptx`](pitch/Sentinel_BLR_Pitch_v2.pptx) |
 
 ---
 
@@ -22,18 +34,12 @@ Developed as a proposal for **Flipkart Gridlock 2.0 – Theme 3**, the system fo
 
 ---
 
-# Why Sentinel-BLR?
+## Why Sentinel-BLR?
 
 Conventional traffic violation systems generally follow:
 
 ```
-Camera
-   ↓
-Vehicle Detection
-   ↓
-Violation Classification
-   ↓
-Fine Generated
+Camera → Vehicle Detection → Violation Classification → Fine Generated
 ```
 
 This works well in ideal conditions but fails under real-world deployment due to:
@@ -47,317 +53,322 @@ This works well in ideal conditions but fails under real-world deployment due to
 - Lack of explainability
 - Poor legal reliability
 
-Sentinel-BLR addresses these challenges through an evidence-centric architecture.
+Sentinel-BLR addresses these challenges through an evidence-centric architecture, using a single composite **Evidence Reliability Score (ERS)** to gate every enforcement decision.
 
 ---
 
-# Key Features
+## Key Features
 
-## Auto-Calibration Heartbeat
+### Auto-Calibration Heartbeat
 
-- Detects camera drift every 15 minutes
-- Uses SIFT/ORB feature matching
-- Computes homography transformation
-- Automatically re-projects all Regions of Interest (ROIs)
-- Eliminates manual recalibration
+- Detects camera drift every 15 minutes using SIFT/ORB feature matching
+- Computes homography transformation and automatically re-projects all Regions of Interest (ROIs)
+- Eliminates manual recalibration; calibration health feeds directly into the ERS
 
 ---
 
-## Adaptive Temporal Striding (ATS)
+### Adaptive Temporal Striding (ATS)
 
 Instead of disabling expensive models during heavy workloads, Sentinel-BLR intelligently reduces inference frequency while maintaining detection quality.
 
-Benefits:
-
-- Real-time performance
-- Lower GPU utilization
-- Consistent detection coverage
-- Graceful degradation under adverse conditions
+- Real-time performance under ≤ 28 ms standard / ≤ 38 ms adverse-condition compute budget
+- Lower GPU utilisation with graceful degradation under load
 
 ---
 
-## Temporal OCR Fusion
+### Temporal OCR Fusion
 
 Instead of selecting the best OCR result from a single frame:
 
-- Stores character probabilities across multiple frames
-- Performs probability fusion
-- Removes corrupted OCR frames
-- Produces more reliable license plate recognition
+- Stores character-level probabilities across **5 frames**
+- Applies per-position softmax fusion across the window
+- Removes corrupted frames via Levenshtein outlier filtering
+- Produces more reliable license plate recognition, especially on partial or dirty plates
 
 ---
 
-## Confidence-Gated Enforcement
+### Confidence-Gated Enforcement
 
 Violation detection and enforcement are intentionally separated.
 
 Every detected violation is routed through:
 
-- Confidence thresholds
+- Per-violation-type confidence thresholds
 - Multi-frame consensus
-- OCR verification
-- Calibration health
-- Policy rules
+- OCR verification (OCR confidence < 90% → human review, never auto-fine)
+- Calibration health check
+- YAML-based policy rules
 
 before any enforcement decision is made.
 
 ---
 
-## Evidence Reliability Score (ERS)
+### Evidence Reliability Score (ERS)
 
-Every evidence packet receives a composite score (0–100) computed using:
-
-- Detection confidence
-- OCR confidence
-- Multi-frame agreement
-- Calibration health
-- Image preprocessing quality
-
-ERS enables transparent review and prioritization without introducing another machine learning model.
-
----
-
-## Hybrid Evidence Payloads
-
-Instead of transmitting raw video streams:
-
-- Metadata
-- Cropped violation image
-- GPS
-- Timestamp
-- Vehicle information
-- OCR result
-- Evidence score
-
-are transmitted together as a lightweight evidence packet.
-
----
-
-# System Architecture
+Every evidence packet receives a composite score (0–100):
 
 ```
-Camera Feed
+ERS = 0.30·Cdet + 0.25·Cocr + 0.20·Rcons + 0.15·Hcal + 0.10·Qpre
+```
+
+| Component | Weight | What it measures |
+|---|---|---|
+| C_det | 0.30 | Detection confidence |
+| C_ocr | 0.25 | OCR / plate-read confidence |
+| R_cons | 0.20 | Multi-frame agreement |
+| H_cal | 0.15 | Calibration health |
+| Q_pre | 0.10 | Image preprocessing quality |
+
+| ERS | Decision |
+|---|---|
+| ≥ 85 | Auto-Fine |
+| 60 – 84 | Human Review |
+| < 60 | Discard — no record |
+
+ERS enables transparent review and prioritisation without introducing an additional machine learning model. Weak evidence structurally cannot become a fine.
+
+---
+
+### Hybrid Evidence Payloads
+
+Instead of transmitting raw video streams, every confirmed violation generates a tamper-evident packet containing: annotated frame + GradCAM overlay + UTC timestamp + GPS + junction ID + plate text + violation type + vehicle class + SHA-256 hash + ERS score + MV Act citation.
+
+---
+
+## System Architecture
+
+```
+Camera Feed (RTSP/ONVIF)
       │
       ▼
-Environmental Preprocessing
+Environmental Preprocessing (CLAHE · Retinex · DCF · Wiener)
       │
       ▼
-Auto Calibration
+Auto-Calibration Heartbeat (SIFT/ORB · every 15 min)
       │
       ▼
-Vehicle Detection
+Vehicle Detection + Tracking (YOLOv10-N TensorRT INT8 · ByteTrack)
       │
       ▼
-Inference Budget Controller
+Inference Budget Controller + ATS (per-Track-ID gating)
       │
       ▼
-Violation Detection
+Violation Detection Engine (5 parallel triggered paths)
       │
       ▼
-Confidence Validation
+Confidence Gate + ERS (0–100 reliability score)
+      │
+      ├── ERS ≥ 85 → AUTO-FINE
+      ├── ERS 60–84 → HUMAN REVIEW
+      └── ERS < 60 → DISCARD
       │
       ▼
-Policy Engine
+Enforcement Policy Engine (YAML · BTP-editable · < 1 min to update)
       │
       ▼
-License Plate OCR
+License Plate OCR (PaddleOCR PP-OCRv4 · 5-frame temporal fusion)
       │
       ▼
-Evidence Generation
+Evidence Packet Generator (SHA-256 tamper-evident · RFC 3161 timestamp)
       │
       ▼
-Strategic Intelligence
+Strategic Intelligence (Junction Urgency Score · LoRA fine-tuning loop)
       │
       ▼
-Analytics Dashboard
+Analytics Dashboard (GIS heatmap · Streamlit · Folium · Plotly)
 ```
 
 ---
 
-# Complete Pipeline
+## Complete Pipeline
 
 The framework consists of **15 logical layers** grouped into **7 functional modules**.
 
 | Group | Responsibility |
-|--------|---------------|
-| Ingestion | Camera feeds and streaming |
-| Preprocessing | Image enhancement and calibration |
-| Detection | Vehicle detection and tracking |
-| Classification | Violation detection |
-| Decision | Confidence validation and policy engine |
-| Evidence | OCR, explainability, evidence packaging |
-| Intelligence | Analytics and deployment planning |
+|---|---|
+| Ingestion | Camera feeds and streaming (Kafka) |
+| Preprocessing | Image enhancement and auto-calibration |
+| Detection | Vehicle detection (YOLOv10-N) and tracking (ByteTrack) |
+| Classification | 5-path violation detection engine |
+| Decision | ERS confidence gate + YAML enforcement policy |
+| Evidence | Temporal OCR fusion, GradCAM explainability, tamper-evident packaging |
+| Intelligence | Junction urgency analytics and weekly LoRA adaptation |
 
 ---
 
-# Traffic Violations Supported
+## Traffic Violations Supported
 
-- Helmet Violation
-- Seatbelt Violation
-- Triple Riding
-- Wrong Side Driving
-- Stop Line Crossing
-- Red Light Violation
-- Illegal Parking
+| Violation | Phase 1 Auto-Fine Eligible | Notes |
+|---|---|---|
+| Helmet non-compliance | ✅ Yes | 3-frame consensus; §129 MV Act |
+| Seatbelt non-compliance | ❌ Review only | Promoted to auto-fine in Phase 2 upon ≥ 95% windshield validation |
+| Triple riding | ❌ Review only | Never auto-fines; crowd index threshold pending Phase 1 validation |
+| Wrong-side driving | ⚠️ Conditional | Human review only at junctions with contested OSM directionality |
+| Stop-line / red-light crossing | ✅ Yes | 2-frame sustain; §194C & §194D |
+| Illegal parking (1st offence) | ⚠️ Warning only | Auto-fine on 2nd offence within 30 days |
+| Illegal parking (repeat) | ✅ Yes | 180 s duration threshold; §184(e) |
 
 ---
 
-# Technology Stack
+## Technology Stack
 
 | Component | Technology |
-|------------|------------|
-| Object Detection | YOLOv10 |
+|---|---|
+| Object Detection | YOLOv10-N (TensorRT INT8) |
 | Tracking | ByteTrack |
-| OCR | PaddleOCR |
+| Safety Classification | MobileNetV3 (LoRA fine-tuned) |
 | Pose Estimation | MediaPipe Pose Lite |
+| OCR | PaddleOCR PP-OCRv4 |
 | Feature Matching | SIFT / ORB |
-| Image Processing | OpenCV |
+| Image Processing | OpenCV (CLAHE, Retinex, DCF, Wiener) |
 | Deep Learning | PyTorch |
-| Inference | TensorRT INT8 |
+| Inference Runtime | TensorRT INT8 |
 | Backend | FastAPI |
+| Message Streaming | Apache Kafka |
 | Database | PostgreSQL + TimescaleDB |
 | Analytics | DuckDB |
-| Dashboard | Streamlit |
-| Streaming | Apache Kafka |
+| Dashboard | Streamlit + Folium + Plotly |
+| Edge Hardware | NVIDIA Jetson Orin NX |
 | Deployment | Docker |
 
 ---
 
-# Proposed Repository Structure
+## Repository Structure
 
 ```
 Sentinel-BLR/
-
+│
 ├── docs/
-│   ├── Project_Proposal.pdf
+│   └── Sentinel_BLR_Code.tex        # Full technical proposal (LaTeX source)
 │
 ├── diagrams/
-│   |__ architecture.png
+│   ├── Sentinel-BLR architecture.png
+│   └── Sentinel-BLR pipeline.png
 │
-├── datasets/
+├── pitch/
+│   └── Sentinel_BLR_Pitch_v2.pptx
 │
-|__ README.md
-
+└── README.md
 ```
 
----
-
-# Deployment Roadmap
-
-### Phase 1
-
-- Pilot deployment
-- High-priority junctions
-- Validate detection accuracy
-- Measure latency
+> **Note on datasets:** Training datasets (Police Violations Dataset — 298,450 records; ASTRAM — 8,173 records) are not included in this repository due to size and licensing constraints. See the Datasets section below for sources.
 
 ---
 
-### Phase 2
+## Deployment Roadmap
 
-- Replace synthetic priors with live data
-- Expand deployment
-- Improve OCR
-- Optimize models
+### Phase 1 — Pilot
 
----
+- 10 high-urgency junctions (top-10 parking concentration from Police Violations Dataset)
+- Validate detection accuracy, latency, and ERS calibration under live Bengaluru conditions
+- Go/no-go criteria: mAP@0.5 ≥ 0.85 AND auto-fine precision ≥ 95% on Phase 1 footage
 
-### Phase 3
+### Phase 2 — Expand
 
-- City-scale deployment
-- Multi-camera support
-- Strategic traffic analytics
-- Continuous model refinement
+- Replace synthetic priors with live field data (fully phased out within 30 days of Phase 1 start)
+- Expand junction coverage; promote seatbelt detection to auto-fine if Phase 1 windshield set clears ≥ 95% precision
+- Improve OCR on degraded and Kannada-character plates
 
----
+### Phase 3 — City Scale
 
-# Performance Targets
-
-| Metric | Target |
-|---------|---------|
-| Detection mAP | ≥ 0.85 |
-| Auto-fine Precision | ≥ 95% |
-| Triple Riding Recall | ≥ 90% |
-| OCR Accuracy | ≥ 95% |
-| End-to-End Latency | ≤ 38 ms (Design Target) |
+- City-scale multi-camera deployment
+- Integrate with BTP's existing 250 ANPR + 80 RLVD ITMS cameras as an ERS overlay layer
+- Live strategic traffic analytics and automatic traffic signal integration
 
 ---
 
-# Datasets
+## Performance Targets
 
-The proposal utilizes:
+| Metric | Target | Scope |
+|---|---|---|
+| Detection mAP@0.5 | ≥ 0.85 | YOLOv10-N on held-out Phase 1 footage |
+| Detector Precision | ≥ 95% | Before ERS gate |
+| **ERS-gated Auto-Fine Precision** | **≥ 99%** | After ERS ≥ 85 filter — the enforcement bar |
+| Triple Riding Recall | ≥ 90% | Human-review path; recall prioritised over precision |
+| OCR Accuracy (clean plates) | ≥ 95% | Post temporal fusion |
+| OCR Accuracy (degraded plates) | ≥ 80% | Post temporal fusion |
+| End-to-End Latency (standard) | ≤ 28 ms | Jetson Orin NX, clear conditions |
+| End-to-End Latency (adverse) | ≤ 38 ms | Fog, rain, sodium-vapour lighting |
 
-- Flipkart Gridlock Dataset A = ASTRAM Event Dataset
-- Flipkart Gridlock Dataset B = Police Violations Dataset
-- Public Karnataka road statistics (synthetic priors)
-- OpenStreetMap
-- IMD Weather Data
-- BMTC GTFS
-
----
-
-# Novel Contributions
-
-Sentinel-BLR introduces several architectural ideas beyond conventional traffic violation systems:
-
-- Auto-calibrating camera geometry
-- Adaptive Temporal Striding
-- Temporal character-level OCR fusion
-- Confidence-gated enforcement
-- Policy engine driven by configuration instead of model retraining
-- Evidence Reliability Score (ERS)
-- Hybrid evidence payload architecture
-- Closed-loop strategic deployment intelligence
+> Detector precision (95%) and ERS-gated auto-fine precision (99%) are intentionally separate targets. A bare 95% detector precision would produce a wrongful-fine rate higher than the system this proposal critiques. The ERS gate exists precisely to lift the auto-fine subset to ≥ 99%, routing everything the gate isn't confident about to human review.
 
 ---
 
-# Current Status
+## Datasets
+
+| Dataset | Size | Source |
+|---|---|---|
+| Police Violations Dataset (Flipkart Gridlock Dataset B) | 298,450 records | Flipkart Gridlock 2.0 |
+| ASTRAM Event Dataset (Flipkart Gridlock Dataset A) | 8,173 records | Flipkart Gridlock 2.0 |
+| KA-TRSI (Karnataka Road Safety Incident data) | Compiled from Karnataka Police Annual Road Safety Reports 2019–2023 | Team-compiled |
+| IDD / ACFR / Roboflow Helmet | Pre-trained weights | Public |
+| OpenStreetMap | Road geometry, one-way directionality | OSM |
+| IMD Weather API | Adverse-condition routing | Government of India |
+| BMTC GTFS | Bus-stop no-parking polygons | BMTC |
+
+---
+
+## Novel Contributions
+
+Sentinel-BLR introduces several architectural ideas beyond conventional YOLO+OCR traffic violation systems:
+
+1. **Evidence Reliability Score (ERS)** — composite 0–100 enforcement gate replacing five independent confidence checks
+2. **Auto-Calibration Heartbeat** — SIFT/ORB homography drift correction every 15 minutes, no manual intervention
+3. **Adaptive Temporal Striding (ATS)** — compute-budget-aware inference frequency reduction without disabling detection
+4. **Temporal Character-Level OCR Fusion** — per-position softmax across 5 frames, Levenshtein outlier removal
+5. **Confidence-Gated Enforcement** — structural separation of detection confidence from enforcement decision
+6. **YAML Policy Engine** — enforcement rules as editable config, not model retraining; updates live in < 1 min
+7. **Hybrid Evidence Payload Architecture** — lightweight tamper-evident packet vs. raw video stream
+8. **Closed-Loop Strategic Deployment Intelligence** — junction urgency scoring with 0.95^days recency decay and weekly LoRA adaptation
+
+---
+
+## Legal & Compliance Framework
+
+- **Motor Vehicles Act citations:** §129 (helmet), §128 (pillion), §194C & §194D (stop-line/red-light), §184(e) (wrong-side / dangerous driving)
+- **DPDP Act 2023:** Data minimisation enforced via hybrid evidence payloads; no raw video retention beyond evidence window
+- **Tamper evidence:** SHA-256 hash + RFC 3161 timestamp anchoring on every evidence packet
+- **Structural safeguards:** Triple riding and seatbelt violations are architecturally blocked from auto-fining in Phase 1, regardless of confidence
+
+---
+
+## Current Status
 
 This repository accompanies the **Flipkart Gridlock 2.0 Phase 2 submission**.
 
-At this stage it contains:
-
-- System architecture
-- Technical proposal
-- Design methodology
-- Deployment strategy
-- Evaluation framework
-
-A production implementation is planned in future development phases.
+At this stage it contains the system architecture, full technical proposal, design methodology, deployment strategy, and evaluation framework. A production implementation is planned in future development phases.
 
 ---
 
-# Future Work
+## Future Work
 
-- Real-time implementation
-- Edge deployment on NVIDIA Jetson
-- Multi-camera fusion
+- Real-time implementation and edge deployment on NVIDIA Jetson Orin NX
+- Multi-camera junction fusion
 - Automatic traffic signal integration
-- Live dashboard
-- Active learning pipeline
-- Explainable AI improvements
+- Seatbelt detection promotion to auto-fine (Phase 2, subject to windshield validation)
+- Active learning pipeline with reviewer-labelled data
+- EigenCAM explainability (forward-pass compatible with TensorRT INT8)
+- OCR extension for Kannada-script state identifier characters on legacy plates
 
 ---
 
-# Hackathon
+## Hackathon
 
 **Competition:** Flipkart Gridlock 2.0
-
 **Phase:** Phase 2
-
 **Theme:** Theme 3 – Automated Photo Identification and Classification for Traffic Violations
 
 ---
 
-# Team_Rocket
+## Team Rocket
 
-**Project:** Sentinel-BLR 
+| Member | Institution |
+|---|---|
+| Krishanu Deka | NIT Silchar (ECE) |
+| [Teammate Name] | NIT Silchar |
 
-Evidence-Quality Traffic Enforcement Framework
-
-Developed for Flipkart Gridlock 2.0.
+**Project:** Sentinel-BLR — Evidence-Quality Traffic Enforcement Framework
 
 ---
----
 
-> **Note:** Sentinel-BLR is currently a research and system-design proposal intended for the Flipkart Gridlock 2.0 hackathon. The repository focuses on architecture, methodology, and deployment strategy rather than a production-ready implementation.
+> **Note:** Sentinel-BLR is currently a research and system-design proposal for Flipkart Gridlock 2.0. The repository focuses on architecture, methodology, and deployment strategy rather than a production-ready implementation.
