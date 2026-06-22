@@ -15,10 +15,10 @@
 
 | Resource | Link |
 |---|---|
-| Technical Proposal (PDF) | [`docs/Sentinel_BLR.pdf`](docs/Sentinel_BLR.pdf) |
+| Technical Proposal (PDF) | [`docs/Sentinel_BLR_v6.1.pdf`](docs/Sentinel_BLR.pdf) |
 | System Architecture Diagram | [`diagrams/Sentinel-BLR architecture.png`](diagrams/Sentinel-BLR%20architecture.png) |
 | Pipeline Flow Diagram | [`diagrams/Sentinel-BLR pipeline.png`](diagrams/Sentinel-BLR%20pipeline.png) |
-| Pitch Deck | [`pitch/Sentinel_BLR_Pitch_v2.pptx`](pitch/Sentinel_BLR_Pitch_v2.pptx) |
+| Pitch Deck | [`docs/Sentinel_BLR_Pitch.pptx`](pitch/Sentinel_BLR_Pitch_v2.pptx) |
 
 ---
 
